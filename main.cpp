@@ -23,13 +23,32 @@ void clearColoring(graph &g);
 void printColorSolution(graph g);
 int getNumConflicts(graph g);
 
+
+int main(int argc, char* argv[])
+{
+    ifstream fin;
+
+    cout << argc << endl;
+    cout << string(argv[0]) << " " << argv[1] << " " << argv[2]<< endl;
+    // argv[0] is the file
+    if (argc > 3) {
+        cout << "More than three arguments. Please enter the filename and which algorithm only" << endl;
+        return 0;
+    }
+
+    string fileName = string(argv[1]);
+
+    int algorithmOption = atoi(argv[2]);
+    int numColors;
+/*
 int main()
 {
 
-	ifstream fin;
-	int numColors;
-    string fileName = "/Users/Ben/Development/Algorithms/Project5/AlgProj5b/instances/color12-4.input";
-	int algorithmOption = 1;
+    ifstream fin;
+    int numColors;
+    string fileName = "/Users/Ben/Development/Algorithms/Project5/AlgProj5b/instances/color48-5.input";
+    int algorithmOption = 1;
+*/
 
 	cout << "Testing File : " << fileName << endl;
 
@@ -42,7 +61,7 @@ int main()
 
     try
     {
-		 cout << "Reading number of colors" << endl;
+		cout << "Reading number of colors" << endl;
         fin >> numColors;
 
         cout << "Reading knapsack instance" << endl;
@@ -56,22 +75,22 @@ int main()
             case 1:
                 cout << "Random - Local Search Small" << endl;
                 randomColoring(g, numColors);
-                randomSupervisor(g, localSearch2opt, numColors, 60);
+                randomSupervisor(g, localSearch2opt, numColors, 600);
                 break;
             case 2:
                 cout << "Random - Local Search Big" << endl;
                 randomColoring(g, numColors);
-                randomSupervisor(g, localSearch3opt, numColors, 60);
+                randomSupervisor(g, localSearch3opt, numColors, 600);
                 break;
             case 3:
                 cout << "Greedy - Local Search Small" << endl;
                 greedyColoring(g, numColors);
-                localSearch2opt(g, numColors, 60);
+                localSearch2opt(g, numColors, 600);
                 break;
             case 4:
                 cout << "Greedy - Local Search Big" << endl;
                 greedyColoring(g, numColors);
-                localSearch3opt(g, numColors, 60);
+                localSearch3opt(g, numColors, 600);
             default:
                 cout << "Failure reading option. Please enter a number 1-4" << endl;
                 cout << "1) Random Local Search Small" << endl;
@@ -104,7 +123,7 @@ void localSearch2opt(graph &g, int numColors, int maxTime)
 {
 	graph champion = graph(g);
 
-    time_t endTime = clock() + ( maxTime * 1000 );
+    time_t endTime = clock() + ( maxTime * 1000000 );
 
     // Loop through the nodes, and find least bad solution for each
     for (int i = 0; (i < g.numNodes()) /*&& endTime > clock()*/; i++)
@@ -151,7 +170,7 @@ void localSearch3opt(graph &g, int numColors, int maxTime)
 {
 	graph champion = graph(g);
 
-    time_t endTime = clock() + ( maxTime * 1000 );
+    time_t endTime = clock() + ( maxTime * 1000000);
 
     // Loop through the nodes, and find least bad solution for each
     for (int i = 0; (i < g.numNodes()) && endTime > clock(); i++)
@@ -289,35 +308,6 @@ void clearColoring(graph &g)
     for (int i = 0; i < g.numNodes(); i++) {
             g.setNodeWeight(i, 0);
     }
-}
-
- 
-bool isValidColor(graph g, int n, int c)
-// Check if node n has any neighbors of color c
-// Return value of true means no neighbors of color c currently exist
-{
-	bool status = true;
-	int neighborColor;
-	int numNodes = g.numNodes();
-
-	// Iterate through all nodes, checking for neighbors
-	for (int i = 0; i < numNodes; i++)
-    {		
-		// Check if nodes have conflicting color, because of 
-		// how the graph is constructed we only need to check in one 
-		// direction, from smaller to larger node
-		if(g.isEdge(i, n))
-		{
-			neighborColor = g.getNodeWeight(i);
-			if(neighborColor == c)
-			{
-				status = false;
-				return status;
-			}
-		}
-	}
-
-	return status;
 }
 	
 void printColorSolution(graph g)
