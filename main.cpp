@@ -10,16 +10,16 @@
 
 using namespace std;
 
-void localSearch2opt(graph &g, int maxTime);
-void localSearch3opt(graph &g, int maxTime);
+void localSearch2opt(graph &g, int numColors, int maxTime);
+void localSearch3opt(graph &g, int numColors, int maxTime);
 
 
 void randomColoring(graph &g);
-void randomSupervisor(graph &g, void (*searchType)(knapsack&k, int time), int maxTime);
+void randomSupervisor(graph &g, void (*searchType)(graph&g, int time), int maxTime);
 
 void neighborhood(graph &g, set<int> idx);
 
-void greedyColoring(graph &g);
+void greedyColoring(graph &g, int numColors);
 bool isValidColor(graph g, int n, int c);
 void printColorSolution(graph g);
 int getNumConflicts(graph g);
@@ -28,6 +28,7 @@ int main()
 {
 
 	ifstream fin;
+	int numColors;
     string fileName = "C:\\Users\\Boris\\Documents\\Visual Studio 2010\\Projects\\caimat-5b\\caimat-4a\\instances\\color12-3.input";
 	int algorithmOption = 1;
 
@@ -42,15 +43,21 @@ int main()
 
     try
     {
+		 cout << "Reading number of colors" << endl;
+        fin >> numColors;
+
         cout << "Reading knapsack instance" << endl;
         graph g(fin);
+
+		cout << "Num colors: " << numColors << endl;
+        cout << g;
 
         switch (algorithmOption)
         {
             case 1:
                 cout << "Greedy - Local Search 2 opt" << endl;
-                greedyColoring(g);
-				localSearch2opt(g, 60);
+                greedyColoring(g, numColors);
+				localSearch2opt(g, numColors, 60);
                 break;
 /*            case 2:
                 cout << "Random - Local Search Big" << endl;
@@ -67,7 +74,7 @@ int main()
                 localSearchBig(k, 600);
                 break;	*/
             default:
-                cout << "Failure reading option. Please enter a number 1-4\n;
+                cout << "Failure reading option. Please enter a number 1-4\n";
                 cout << "1) Random Local Search Small" << endl;
                 cout << "2) Random Local Search Big" << endl;
                 cout << "3) Greedy Local Search Small" << endl;
@@ -76,7 +83,7 @@ int main()
         }
 
         cout << endl << "Best solution" << endl;
-        printColorSolution(graph g)
+        printColorSolution(g);
     }
 
 
@@ -94,56 +101,58 @@ int main()
 }
 
 
-void localSearch2opt(graph &g, int maTime)
+void localSearch2opt(graph &g, int numColors, int maxTime)
 {
-	graph champion = knapsack(k);
+	graph champion = graph(g);
 
     time_t endTime = clock() + ( maxTime * 1000 );
 
     // Loop through the nodes, and find least bad solution for each
-    for (int i = 0; i < g.getN && endTime > clock(); i++)
+    for (int i = 0; i < g.numNodes() && endTime > clock(); i++)
     {
-		for (int j = 0; i < g.getN && endTime > clock(); i++)
+		for (int j = 0; j < g.numNodes() && endTime > clock(); i++)
 		{
 			if(i == j)
 				continue;
 			// Go through all possible colors and select the one that produces the least conflicts
 			int lowestConflicts = 99999; // pre set to infinity
-			int lowestColor1 = 1;
-			int lowestColor2 = 1;
-
+			int lowestColorI = 0;
+			int lowestColorJ = 0;
+			
 			// Greedily color node with color that creates minimum conflicts
-			for(int currColor1 = 1; currColor < g.numColors(); currColor++)
+			for(int currColorI = 0; currColorI < numColors; currColorI++)
 			{
-				for(int currColor2 = 1; currColor < g.numColors(); currColor++)
+				for(int currColorJ = 0; currColorJ < numColors; currColorJ++)
 				{
-					g.setNodeWeight(i, currColor1);
-					g.setNodeWeight(j, currColor2);
+					g.setNodeWeight(i, currColorI);
+					g.setNodeWeight(j, currColorJ);
 					if(getNumConflicts(g) < lowestConflicts)
 					{
-						lowestConflict = getNumConflicts(g);
-						lowestColor = currColor;
+						lowestConflicts = getNumConflicts(g);
+						lowestColorI = currColorI;
+						lowestColorJ = currColorJ;
 					}
 				}
 			}
-			g.setNodeWeight(currNode, lowestColor); 
+			g.setNodeWeight(i, lowestColorI); 
+			g.setNodeWeight(j, lowestColorJ);
 
 			// Replace champion if this solution is better
 			if (getNumConflicts(g) < getNumConflicts(champion)) {
 				champion = graph(g);
 			} 
-    }
+		}
 
     // Save the champion and return him
     g = champion;
+	}
 }
 
 
 
 
 
-
-void greedyColoring(graph &g)
+void greedyColoring(graph &g, int numColors)
 // Greedy algorithm that finds minimum number of conflicts for a
 // numColors coloring of graph g by iteratively going trough all
 // nodes and choosing the lowest color that does not conflict with 
@@ -157,21 +166,20 @@ void greedyColoring(graph &g)
 	{
 		// Go through all possible colors and select the one that produces the least conflicts
 		int lowestConflicts = 99999; // pre set to infinity
-		int lowestColor = 1;
+		int lowestColor = 0;
 
 		// Greedily color node with color that creates minimum conflicts
-		for(int currColor = 1; currColor < g.numColors(); currColor++)
+		for(int currColor = 0; currColor < numColors; currColor++)
 		{
 			g.setNodeWeight(currNode, currColor);
 			if(getNumConflicts(g) < lowestConflicts)
 			{
-				lowestConflict = getNumConflicts(g);
+				lowestConflicts = getNumConflicts(g);
 				lowestColor = currColor;
 			}
 		}
 		g.setNodeWeight(currNode, lowestColor);
 
-		}
 	}
 }
  
