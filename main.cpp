@@ -29,7 +29,7 @@ int main()
 
 	ifstream fin;
 	int numColors;
-    string fileName = "C:\\Users\\Boris\\Documents\\Visual Studio 2010\\Projects\\caimat-5b\\caimat-4a\\instances\\color12-3.input";
+    string fileName = "C:\\Users\\Boris\\Documents\\Visual Studio 2010\\Projects\\caimat-5b\\caimat-5b\\instances\\color12-3.input";
 	int algorithmOption = 1;
 
 	cout << "Testing File : " << fileName << endl;
@@ -108,12 +108,13 @@ void localSearch2opt(graph &g, int numColors, int maxTime)
     time_t endTime = clock() + ( maxTime * 1000 );
 
     // Loop through the nodes, and find least bad solution for each
-    for (int i = 0; i < g.numNodes() && endTime > clock(); i++)
+    for (int i = 0; (i < g.numNodes()) /*&& endTime > clock()*/; i++)
     {
-		for (int j = 0; j < g.numNodes() && endTime > clock(); i++)
+		for (int j = 0; (j < g.numNodes()) && endTime > clock(); j++)
 		{
 			if(i == j)
 				continue;
+			
 			// Go through all possible colors and select the one that produces the least conflicts
 			int lowestConflicts = 99999; // pre set to infinity
 			int lowestColorI = 0;
@@ -142,14 +143,10 @@ void localSearch2opt(graph &g, int numColors, int maxTime)
 				champion = graph(g);
 			} 
 		}
-
-    // Save the champion and return him
-    g = champion;
 	}
+    // Save the champion and return him
+    g = champion;	
 }
-
-
-
 
 
 void greedyColoring(graph &g, int numColors)
@@ -219,17 +216,10 @@ void printColorSolution(graph g)
 	int currColor;
 	int biggestColor = 0;
 
-	cout<<"\nSolution for greedy coloring of this graph:\n\n";
-
-	for(int i = 0; i < numNodes; i++)
-	{
-		currColor = g.getNodeWeight(i);
-		cout<<"Color of node "<<i<<": "<<currColor<<"\n";
-		if (currColor > biggestColor)
-			biggestColor = currColor;
-	}
-
-	cout<<"\nA total of " << biggestColor<< " colors were used.\n\n";
+	cout<<"\nSolution for local search of this graph:\n\n";
+	cout<<g;
+	cout<<"Number of conflicts detected: "<< getNumConflicts(g)<<endl;
+	
 }
 
 int getNumConflicts(graph g)
