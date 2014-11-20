@@ -14,12 +14,13 @@ void localSearch2opt(graph &g, int numColors, int maxTime);
 void localSearch3opt(graph &g, int numColors, int maxTime);
 
 
-void randomColoring(graph &g);
-void randomSupervisor(graph &g, void (*searchType)(graph&g, int time), int maxTime);
+void randomColoring(graph &g, int numColors);
+void randomSupervisor(graph &g, void (*searchType)(graph&g, int numColors, int maxTime), int numColors, int maxTime);
 
 void neighborhood(graph &g, set<int> idx);
 
 void greedyColoring(graph &g, int numColors);
+void clearColoring(graph &g);
 bool isValidColor(graph g, int n, int c);
 void printColorSolution(graph g);
 int getNumConflicts(graph g);
@@ -29,7 +30,7 @@ int main()
 
 	ifstream fin;
 	int numColors;
-    string fileName = "C:\\Users\\Boris\\Documents\\Visual Studio 2010\\Projects\\caimat-5b\\caimat-5b\\instances\\color12-3.input";
+    string fileName = "/Users/Ben/Development/Algorithms/Project5/AlgProj5b/instances/color12-4.input";
 	int algorithmOption = 1;
 
 	cout << "Testing File : " << fileName << endl;
@@ -55,8 +56,8 @@ int main()
         switch (algorithmOption)
         {
             case 1:
-                cout << "Greedy - Local Search 2 opt" << endl;
-                greedyColoring(g, numColors);
+                cout << "Random - Local Search Small" << endl;
+                randomColoring(g, numColors);
 				localSearch2opt(g, numColors, 60);
                 break;
 /*            case 2:
@@ -73,7 +74,7 @@ int main()
                 greedyKnapsack(k);
                 localSearchBig(k, 600);
                 break;	*/
-            default:
+                default:
                 cout << "Failure reading option. Please enter a number 1-4\n";
                 cout << "1) Random Local Search Small" << endl;
                 cout << "2) Random Local Search Big" << endl;
@@ -179,6 +180,57 @@ void greedyColoring(graph &g, int numColors)
 
 	}
 }
+
+void randomColoring(graph &g, int numColors)
+{
+    srand(time(NULL));
+
+    int color;
+
+    for (int i = 0; i < g.numNodes(); i++)
+    {
+        color = rand() % numColors;
+
+        g.setNodeWeight(i, color);
+    }
+}
+
+void randomSupervisor(graph &g, void (*searchType)(graph&g, int numColors, int maxTime), int numColors, int maxTime)
+{
+    graph bestGraph = graph(g);
+    int bestNumConflicts = INT32_MAX;
+    int tempNumConflicts;
+    // NOTE: Change the multiplier if on Visual Studios. This large number
+    // is only needed with g++ compilers.
+    time_t endTime = clock() + (maxTime * 1000000);
+
+    while (endTime > clock())
+    {
+        clearColoring(g);
+        // Generate a new random coloring
+        randomColoring(g, numColors);
+
+        // Use local search
+        (*searchType)(g, numColors, maxTime);
+
+        tempNumConflicts = getNumConflicts(g);
+        if (tempNumConflicts < bestNumConflicts)
+        {
+            bestGraph = graph(g);
+            bestNumConflicts = tempNumConflicts;
+        }
+    }
+
+    g = graph(bestGraph);
+}
+
+void clearColoring(graph &g)
+{
+    for (int i = 0; i < g.numNodes(); i++) {
+            g.setNodeWeight(i, 0);
+    }
+}
+
  
 bool isValidColor(graph g, int n, int c)
 // Check if node n has any neighbors of color c
