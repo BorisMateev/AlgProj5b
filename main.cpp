@@ -13,15 +13,13 @@ using namespace std;
 void localSearch2opt(graph &g, int numColors, int maxTime);
 void localSearch3opt(graph &g, int numColors, int maxTime);
 
-
-void randomColoring(graph &g, int numColors);
 void randomSupervisor(graph &g, void (*searchType)(graph&g, int numColors, int maxTime), int numColors, int maxTime);
 
-void neighborhood(graph &g, set<int> idx);
-
 void greedyColoring(graph &g, int numColors);
+void randomColoring(graph &g, int numColors);
+
+
 void clearColoring(graph &g);
-bool isValidColor(graph g, int n, int c);
 void printColorSolution(graph g);
 int getNumConflicts(graph g);
 
@@ -58,24 +56,24 @@ int main()
             case 1:
                 cout << "Random - Local Search Small" << endl;
                 randomColoring(g, numColors);
-				localSearch2opt(g, numColors, 60);
+                randomSupervisor(g, localSearch2opt, numColors, 60);
                 break;
-/*            case 2:
+            case 2:
                 cout << "Random - Local Search Big" << endl;
-                randomSupervisor(k, localSearchBig, 600);
+                randomColoring(g, numColors);
+                randomSupervisor(g, localSearch3opt, numColors, 60);
                 break;
             case 3:
                 cout << "Greedy - Local Search Small" << endl;
-                greedyKnapsack(k);
-                localSearchSmall(k, 600);
+                greedyColoring(g, numColors);
+                localSearch2opt(g, numColors, 60);
                 break;
             case 4:
                 cout << "Greedy - Local Search Big" << endl;
-                greedyKnapsack(k);
-                localSearchBig(k, 600);
-                break;	*/
-                default:
-                cout << "Failure reading option. Please enter a number 1-4\n";
+                greedyColoring(g, numColors);
+                localSearch3opt(g, numColors, 60);
+            default:
+                cout << "Failure reading option. Please enter a number 1-4" << endl;
                 cout << "1) Random Local Search Small" << endl;
                 cout << "2) Random Local Search Big" << endl;
                 cout << "3) Greedy Local Search Small" << endl;
@@ -149,6 +147,65 @@ void localSearch2opt(graph &g, int numColors, int maxTime)
     g = champion;	
 }
 
+void localSearch3opt(graph &g, int numColors, int maxTime)
+{
+	graph champion = graph(g);
+
+    time_t endTime = clock() + ( maxTime * 1000 );
+
+    // Loop through the nodes, and find least bad solution for each
+    for (int i = 0; (i < g.numNodes()) && endTime > clock(); i++)
+    {
+		for (int j = 0; (j < g.numNodes()) && endTime > clock(); j++)
+		{
+			for (int k = 0; (k < g.numNodes()) && endTime > clock(); k++)
+			{
+				if(i == j || i == k || j == k)
+					continue;
+			
+				// Go through all possible colors and select the one that produces the least conflicts
+				int lowestConflicts = 99999; // pre set to infinity
+				int lowestColorI = 0;
+				int lowestColorJ = 0;
+				int lowestColorK = 0;
+			
+				// Greedily color node with color that creates minimum conflicts
+				for(int currColorI = 0; currColorI < numColors; currColorI++)
+				{
+					for(int currColorJ = 0; currColorJ < numColors; currColorJ++)
+					{
+						for(int currColorK = 0; currColorK < numColors; currColorK++)
+						{
+							g.setNodeWeight(i, currColorI);
+							g.setNodeWeight(j, currColorJ);
+							g.setNodeWeight(k, currColorK);
+
+							if(getNumConflicts(g) < lowestConflicts)
+							{
+								lowestConflicts = getNumConflicts(g);
+								lowestColorI = currColorI;
+								lowestColorJ = currColorJ;
+								lowestColorK = currColorK;
+							}
+						}
+					}
+					g.setNodeWeight(i, lowestColorI); 
+					g.setNodeWeight(j, lowestColorJ);
+					g.setNodeWeight(k, lowestColorK);
+
+					// Replace champion if this solution is better
+					if (getNumConflicts(g) < getNumConflicts(champion))
+					{
+						champion = graph(g);
+					} 
+				}
+			}
+		
+		}
+	}
+	// Save the champion to return him
+		g = champion;	
+}
 
 void greedyColoring(graph &g, int numColors)
 // Greedy algorithm that finds minimum number of conflicts for a
@@ -218,6 +275,9 @@ void randomSupervisor(graph &g, void (*searchType)(graph&g, int numColors, int m
         {
             bestGraph = graph(g);
             bestNumConflicts = tempNumConflicts;
+
+            if (bestNumConflicts == 0)
+                break;
         }
     }
 

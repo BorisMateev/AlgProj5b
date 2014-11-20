@@ -674,7 +674,7 @@ ostream &operator<<(ostream &ostr, const graph &g)
    cout << "------------------------------------------------" << endl;
    g.printNodes();
    cout << endl;
-   g.printEdges();
+//   g.printEdges();
    cout << endl;
 
    return ostr;
