@@ -25,23 +25,6 @@ void printColorSolution(graph g);
 int getNumConflicts(graph g);
 
 
-int main(int argc, char* argv[])
-{
-    ifstream fin;
-
-    cout << argc << endl;
-    cout << string(argv[0]) << " " << argv[1] << " " << argv[2]<< endl;
-    // argv[0] is the file
-    if (argc > 3) {
-        cout << "More than three arguments. Please enter the filename and which algorithm only" << endl;
-        return 0;
-    }
-
-    string fileName = string(argv[1]);
-
-    int algorithmOption = atoi(argv[2]);
-    int numColors;
-/*
 int main()
 {
 
@@ -49,7 +32,7 @@ int main()
     int numColors;
     string fileName = "/Users/Ben/Development/Algorithms/Project5/AlgProj5b/instances/color48-5.input";
     int algorithmOption = 1;
-*/
+
 
 	cout << "Testing File : " << fileName << endl;
 
@@ -290,14 +273,16 @@ void randomColoring(graph &g, int numColors)
 }
 
 void randomSupervisor(graph &g, void (*searchType)(graph&g, int numColors, int maxTime), int numColors, int maxTime)
+// Run local search with 2opt or 3opt neighborhood (passed into this function),
+// using a random seed. 
 {
     graph bestGraph = graph(g);
     int bestNumConflicts = INT32_MAX;
     int tempNumConflicts;
-    // NOTE: Change the multiplier if on Visual Studios. This large number
-    // is only needed with g++ compilers.
-    time_t endTime = clock() + (maxTime * 1000000);
+    
+    time_t endTime = clock() + (maxTime * 1000);
 
+	// Keep running until time limit is reached
     while (endTime > clock())
     {
         clearColoring(g);
@@ -307,6 +292,7 @@ void randomSupervisor(graph &g, void (*searchType)(graph&g, int numColors, int m
         // Use local search
         (*searchType)(g, numColors, maxTime);
 
+		// If there is time remaining, store and search a new neighborhood
         tempNumConflicts = getNumConflicts(g);
         if (tempNumConflicts < bestNumConflicts)
         {
@@ -322,6 +308,7 @@ void randomSupervisor(graph &g, void (*searchType)(graph&g, int numColors, int m
 }
 
 void clearColoring(graph &g)
+// Set all node weights to 0
 {
     for (int i = 0; i < g.numNodes(); i++) {
             g.setNodeWeight(i, 0);
