@@ -5,6 +5,7 @@
 #include <set>
 #include <random>
 #include <time.h>
+#include <stdint.h>
 
 #include "headers/graph.h"
 
@@ -120,12 +121,17 @@ int main()
 
 
 void localSearch2opt(graph &g, int numColors, int maxTime)
+// Steepest decent local search algorithm using a 2 opt neighborhood. 
+// Using 2opt, pairs of nodes have their colors switched to the combination
+// that gives the lowest number of conflicts. The algorithm continues to 
+// take the solution of the best modifications, moving in the steepest descent
+// towards the optimal solution. 
 {
 	graph champion = graph(g);
 
     time_t endTime = clock() + ( maxTime * 1000000 );
 
-    // Loop through the nodes, and find least bad solution for each
+    // Loop through all pairs of nodes i and j to generate naighborhood
     for (int i = 0; (i < g.numNodes()) /*&& endTime > clock()*/; i++)
     {
 		for (int j = 0; (j < g.numNodes()) && endTime > clock(); j++)
@@ -135,16 +141,18 @@ void localSearch2opt(graph &g, int numColors, int maxTime)
 			
 			// Go through all possible colors and select the one that produces the least conflicts
 			int lowestConflicts = 99999; // pre set to infinity
-			int lowestColorI = 0;
+			int lowestColorI = 0; // Temp to determine color for the best next step
 			int lowestColorJ = 0;
 			
-			// Greedily color node with color that creates minimum conflicts
+			// Greedily color node pair with color that creates minimum conflicts
 			for(int currColorI = 0; currColorI < numColors; currColorI++)
 			{
 				for(int currColorJ = 0; currColorJ < numColors; currColorJ++)
 				{
 					g.setNodeWeight(i, currColorI);
 					g.setNodeWeight(j, currColorJ);
+
+					// Check if this colors combination is the best
 					if(getNumConflicts(g) < lowestConflicts)
 					{
 						lowestConflicts = getNumConflicts(g);
@@ -153,6 +161,7 @@ void localSearch2opt(graph &g, int numColors, int maxTime)
 					}
 				}
 			}
+			// Move in the direction of a better solution
 			g.setNodeWeight(i, lowestColorI); 
 			g.setNodeWeight(j, lowestColorJ);
 
@@ -167,12 +176,17 @@ void localSearch2opt(graph &g, int numColors, int maxTime)
 }
 
 void localSearch3opt(graph &g, int numColors, int maxTime)
+// Steepest decent local search algorithm using a 3 opt neighborhood. 
+// Using 3opt, triplets of nodes have their colors switched to the combination
+// that gives the lowest number of conflicts. The algorithm continues to 
+// take the solution of the best modifications, moving in the steepest descent
+// towards the optimal solution.
 {
 	graph champion = graph(g);
 
     time_t endTime = clock() + ( maxTime * 1000000);
 
-    // Loop through the nodes, and find least bad solution for each
+    // Loop through all triplets of nodes i, j and k
     for (int i = 0; (i < g.numNodes()) && endTime > clock(); i++)
     {
 		for (int j = 0; (j < g.numNodes()) && endTime > clock(); j++)
@@ -182,13 +196,14 @@ void localSearch3opt(graph &g, int numColors, int maxTime)
 				if(i == j || i == k || j == k)
 					continue;
 			
-				// Go through all possible colors and select the one that produces the least conflicts
+				// Temporary variables to store best coloring of the 
+				// 3 nodes and move in the steepest descent
 				int lowestConflicts = 99999; // pre set to infinity
 				int lowestColorI = 0;
 				int lowestColorJ = 0;
 				int lowestColorK = 0;
 			
-				// Greedily color node with color that creates minimum conflicts
+				// Iterate through all color combinations and store the best
 				for(int currColorI = 0; currColorI < numColors; currColorI++)
 				{
 					for(int currColorJ = 0; currColorJ < numColors; currColorJ++)
@@ -199,6 +214,7 @@ void localSearch3opt(graph &g, int numColors, int maxTime)
 							g.setNodeWeight(j, currColorJ);
 							g.setNodeWeight(k, currColorK);
 
+							// Checks for best coloring
 							if(getNumConflicts(g) < lowestConflicts)
 							{
 								lowestConflicts = getNumConflicts(g);
@@ -208,6 +224,7 @@ void localSearch3opt(graph &g, int numColors, int maxTime)
 							}
 						}
 					}
+					// Move in the direction of the best neighboring solution
 					g.setNodeWeight(i, lowestColorI); 
 					g.setNodeWeight(j, lowestColorJ);
 					g.setNodeWeight(k, lowestColorK);
@@ -258,6 +275,7 @@ void greedyColoring(graph &g, int numColors)
 }
 
 void randomColoring(graph &g, int numColors)
+// Assign a random color in range numColors to each node in graph g
 {
     srand(time(NULL));
 
